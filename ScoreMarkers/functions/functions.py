@@ -3,16 +3,15 @@ import pandas as pd
 import scanpy as sc
 
 
-
 class DefineLabel:
     def __init__(self, markers: str, adata: str):
         """
-
         :param markers: (str) Path to the csv file containing the positive and negative markers for each label
         :param adata: (str) Path to the anndata file with the cells that have to be scored
         """
         self.adata = adata
         self.markers = markers
+
     def read_markers(self):
         """
         Read the csv path and store the data in a pandas dataframe
@@ -20,7 +19,7 @@ class DefineLabel:
         :return: pandas dataframe with labels and +/- markers
         """
         markers = pd.read_csv(self.markers, index_col=[0])
-        if not(markers.index.name == "label" and markers.columns[0] == "PoN"):
+        if not (markers.index.name == "Label" and markers.columns[0] == "PoN"):
             print("Wrong csv format")
             return pd.DataFrame()
         else:
@@ -29,7 +28,7 @@ class DefineLabel:
     def get_markers(self):
         """
         This function split the markers dataframe in 2 different df: Positive markers and negative markers,
-        then in drops the columns with index 1 to keep onlt the labels and the markers
+        then in drops the columns with index 1 to keep onlty the labels and the markers
         :return: 2 pandas dataframe with positive or negative markers
         """
         markers = self.read_markers()
@@ -43,6 +42,7 @@ class DefineLabel:
             print("The dataframe is empty")
             return pd.DataFrame(), pd.DataFrame()
         pass
+
     def get_adata(self):
         """
         This function read the anndata file
@@ -63,8 +63,7 @@ class DefineLabel:
             return list()
         return celltypes
 
-
-    def score_label(self, alpha=0.8, beta=1):
+    def score_label(self,alpha=0.8, beta=1):
         """
         This function give a score for each label and each cell and return a dataframe with cell barcodes as index
         and the columns with the scores for each label
@@ -104,9 +103,17 @@ class DefineLabel:
             cells["neg"] = cells["neg"] / count
             cells[celltype] = (alpha * cells["pos"]) + (beta * cells["neg"])
         cells = cells.set_index(0)
+        del cells["pos"]
+        del cells["neg"]
         return cells
         pass
 
+    def get_label(self, alpha=0.8, beta=1,  newlabel="new label"):
+        adata = self.get_adata()
+        cells = self.score_label(alpha, beta)
+        cells["Label"] = cells.iloc[:, 1:].idxmax(axis=1)
+        cells = cells.iloc[:, -1]
+        #adata[newlabel] = cells
+        return cells
 
 
-dc = DefineLabel("../")
