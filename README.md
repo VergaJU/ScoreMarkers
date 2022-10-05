@@ -95,3 +95,14 @@ required arguments:
                         containing markers can be unnamed
 
 ```
+
+The required arguments are the anndata input, a single cell experiment dataset obtained with scanpy and a csv file containing the labels and markers with the following structure:
+```
+Label,PoN,,,,,
+label1,pos,marker1,marker2,marker3,marker4,marker5
+label1,neg,marker1,marker2,marker3,,
+```
+
+The outputs are:
+- updated anndata file with labels
+- csv file with cells and scores for each label
