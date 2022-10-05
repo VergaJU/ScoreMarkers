@@ -121,14 +121,19 @@ class DefineLabel:
         :return: anndata file with new labels
         """
         cells, adata = self.score_label(alpha, beta)
-        cells["Label"] = cells.iloc[:, 1:].idxmax(axis=1)
+        cells["Label"] = cells.idxmax(axis=1)
+        newdf = self.markers
+        newdf = newdf[:-4] + "_results.csv"
+        cells.to_csv(newdf)
         cells = cells.iloc[:, -1]
         adata.obs[newlabel] = cells
+        print(adata.obs[newlabel].value_counts())
         if newfile == "":
             newfile = self.adata
             newfile = newfile[:-5] + "_processed.h5ad"
         else:
             pass
         adata.write(newfile)
+
 
 
