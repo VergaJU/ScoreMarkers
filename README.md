@@ -72,7 +72,6 @@ pip install requirements
 
 The script that run all the scoring functions and assign labels is `GetLabels.py`
 ```
-python GetLabels.py -h
 usage: GetLabels.py [-h] [-i INPUT_FILE] [-c CSV] [-o OUTPUT] [-a ALPHA] [-b BETA] [-l LABEL]
 
 Function to score and label cells considering 2 set of markers (positive and negative)
@@ -106,3 +105,15 @@ label1,neg,marker1,marker2,marker3,,
 The outputs are:
 - updated anndata file with labels
 - csv file with cells and scores for each label
+
+## Example
+
+Get help page:
+```
+python GetLabels.py -h
+```
+
+example ommand:
+```
+python GetLabels.py -i /path/to/anndata/file.h5ad -c /path/to/marker/file.csv -o /path/for/output/file.h5ad
+```
