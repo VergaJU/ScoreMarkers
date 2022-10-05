@@ -67,7 +67,9 @@ class DefineLabel:
         """
         This function give a score for each label and each cell and return a dataframe with cell barcodes as index
         and the columns with the scores for each label
-        :return: pandas dataframe with cells as rows and scores ad columns
+        :return: pandas dataframe with cells as rows and scores ad columns, adata with the sc experiment
+        :param alpha: (float) weight positive markers
+        :param beta:  (float) weight negative markers
         """
         pos_markers, neg_markers = self.get_markers()
         adata = self.get_adata()
@@ -109,6 +111,15 @@ class DefineLabel:
         pass
 
     def get_label(self, newfile="", alpha=0.8, beta=1,  newlabel="new_label"):
+        """
+        This function label each cell with the given label with highest score and save the new anndata file.
+        TODO: refine handling of labels with same scores
+        :param newfile: (str) with the output file name
+        :param alpha: (float) weight positive markers
+        :param beta:  (float) weight negative markers
+        :param newlabel: (str) label of the new variable
+        :return: anndata file with new labels
+        """
         cells, adata = self.score_label(alpha, beta)
         cells["Label"] = cells.iloc[:, 1:].idxmax(axis=1)
         cells = cells.iloc[:, -1]
