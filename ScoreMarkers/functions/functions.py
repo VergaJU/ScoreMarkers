@@ -105,15 +105,19 @@ class DefineLabel:
         cells = cells.set_index(0)
         del cells["pos"]
         del cells["neg"]
-        return cells
+        return cells, adata
         pass
 
-    def get_label(self, alpha=0.8, beta=1,  newlabel="new label"):
-        adata = self.get_adata()
-        cells = self.score_label(alpha, beta)
+    def get_label(self, newfile="", alpha=0.8, beta=1,  newlabel="new_label"):
+        cells, adata = self.score_label(alpha, beta)
         cells["Label"] = cells.iloc[:, 1:].idxmax(axis=1)
         cells = cells.iloc[:, -1]
-        #adata[newlabel] = cells
-        return cells
+        adata.obs[newlabel] = cells
+        if newfile == "":
+            newfile = self.adata
+            newfile = newfile[:-5] + "_processed.h5ad"
+        else:
+            pass
+        adata.write(newfile)
 
 
