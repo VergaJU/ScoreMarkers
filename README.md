@@ -6,7 +6,7 @@ The project aim is to score and label the cells from an anndata file based on th
 For each label the score is given by the formula below:<br/>
 
 $$
-\sum{(\alpha\times\frac{\sum{_{i=1}^{n_p}}{f(x_p)}}{n_p}+\beta\times\frac{\sum{_{i=1}^{n_n}}{f(x_n)}}{n_n})}
+\sum{(\alpha\times\frac{\sum_{i=1}^{n_p}{f(x_p)}}{n_p}+\beta\times\frac{\sum{_{i=1}^{n_n}}{f(x_n)}}{n_n})}
 $$
 
 With:
