@@ -72,9 +72,9 @@ pip install requirements
 
 The script that run all the scoring functions and assign labels is `GetLabels.py`
 ```
-usage: GetLabels.py [-h] [-i INPUT_FILE] [-c CSV] [-o OUTPUT] [-a ALPHA] [-b BETA] [-l LABEL]
+usage: GetLabels.py [-h] [-i INPUT_FILE] [-c CSV] [-o OUTPUT] [-a ALPHA] [-b BETA] [-l LABEL] [-t THRESHOLD_LABEL] [-v THRESHOLD_VALUE]
 
-Function to score and label cells considering 2 set of markers (positive and negative)
+Function to score and label cells considering 2 set of markers.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -85,13 +85,17 @@ optional arguments:
   -b BETA, --beta BETA  Negative markers bias, correct the weight of negative markers. Default=1
   -l LABEL, --label LABEL
                         Name of the new variable in .obs, default = 'new_label'
+  -t THRESHOLD_LABEL, --threshold_label THRESHOLD_LABEL
+                        Name of the label to use when cells scores doesn't pass the threshold, default = 'Other'
+  -v THRESHOLD_VALUE, --threshold_value THRESHOLD_VALUE
+                        Value of the threshold scores has pass to label the cells
 
 required arguments:
   -i INPUT_FILE, --input_file INPUT_FILE
                         anndata file with cells to be processed
-  -c CSV, --csv CSV     CSV file with labels and markers, NOTE: First column must contains the labels Negative and positive markers must be in separated lines The
-                        header need this format: 'Label' for the labels, 'PoN' for the column that specify if the marker is positive or negativeThe other columns
-                        containing markers can be unnamed
+  -c CSV, --csv CSV     CSV file with labels and markers, NOTE: First column must contains the labels Negative and positive markers must be in separated lines
+                        The header need this format: 'Label' for the labels, 'PoN' for the column that specify if the marker is positive or negativeThe other
+                        columns containing markers can be unnamed
 
 ```
 
@@ -101,6 +105,14 @@ Label,PoN,,,,,
 label1,pos,marker1,marker2,marker3,marker4,marker5
 label1,neg,marker1,marker2,marker3,,
 ```
+
+The optional arguments include:
+- output: the output name, if not added it will be the input iname appended with `_processed.h5ad`
+- alpha: Bias for the positive markers weight, increasing it increase also the weight assigned to them
+- beta: Bias for the negative markers weight. Since the negative markers "must" not be present, the default parameters assigned an higher value to beta than to alpha
+- label: the name of the .obs variable to assign the new labels
+- threshold label: label to add to the cells whose score doesn't pass the threshold
+- threshold value: thershold the score has to pass to assign the label to the cell. By default is zero since negative values suggest an higher score of the negative markers over the positive markers.
 
 The outputs are:
 - updated anndata file with labels
@@ -113,7 +125,7 @@ Get help page:
 python GetLabels.py -h
 ```
 
-example ommand:
+Minimum example command:
 ```
 python GetLabels.py -i /path/to/anndata/file.h5ad -c /path/to/marker/file.csv -o /path/for/output/file.h5ad
 ```
