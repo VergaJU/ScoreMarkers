@@ -1,8 +1,8 @@
 import functions.functions as fun
 import argparse
 
-parser = argparse.ArgumentParser(description='Function to score and label cells considering 2 set of markers ('
-                                             'positive and negative)')
+parser = argparse.ArgumentParser(description="Function to score and label cells considering 2 set of markers.")
+
 requiredNamed = parser.add_argument_group('required arguments')
 requiredNamed.add_argument("-i", "--input_file",
                            help="anndata file with cells to be processed")
@@ -25,9 +25,20 @@ parser.add_argument("-b", "--beta",
 parser.add_argument("-l", "--label",
                     help="Name of the new variable in .obs, default = 'new_label'",
                     default="new_label")
+parser.add_argument("-t", "--threshold_label",
+                    help="Name of the label to use when cells scores doesn't pass the threshold, default = 'Other'",
+                    default="Others")
+parser.add_argument("-v", "--threshold_value",
+                    help="Value of the threshold scores has pass to label the cells",
+                    default=0)
 args = parser.parse_args()
 
 define = fun.DefineLabel(adata=args.input_file,
                          markers=args.csv)
 
-define.get_label(alpha=args.alpha, beta=args.beta, newlabel=args.label, newfile=args.output)
+define.get_label(alpha=args.alpha,
+                 beta=args.beta,
+                 newlabel=args.label,
+                 newfile=args.output,
+                 thresholdlab=args.threshold_label,
+                 threshold=args.threshold_value)

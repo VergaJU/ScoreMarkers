@@ -110,17 +110,20 @@ class DefineLabel:
         return cells, adata
         pass
 
-    def get_label(self, newfile="", alpha=0.8, beta=1,  newlabel="new_label"):
+    def get_label(self, newfile="", alpha=0.8, beta=1,  newlabel="new_label", threshold=0, thresholdlab="Other"):
         """
-        This function label each cell with the given label with highest score and save the new anndata file.
+               This function label each cell with the given label with highest score and save the new anndata file.
         TODO: refine handling of labels with same scores
         :param newfile: (str) with the output file name
         :param alpha: (float) weight positive markers
         :param beta:  (float) weight negative markers
         :param newlabel: (str) label of the new variable
-        :return: anndata file with new labels
+        :param threshold: (int) value of the threshold to label the cells
+        :param thresholdlab: (str) name of the thershold label if none of the other labels have an higher score
+        :return:
         """
         cells, adata = self.score_label(alpha, beta)
+        cells.insert(loc=0, column=thresholdlab, value=threshold)
         cells["Label"] = cells.idxmax(axis=1)
         newdf = self.markers
         newdf = newdf[:-4] + "_results.csv"
