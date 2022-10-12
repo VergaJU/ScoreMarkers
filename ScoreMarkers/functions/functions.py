@@ -33,9 +33,9 @@ class DefineLabel:
         """
         markers = self.read_markers()
         if not markers.empty:
-            pos_markers = markers.loc[markers["PoN"] == "pos"]
-            neg_markers = markers.loc[markers["PoN"] == "neg"]
-            pos_markers = pos_markers.drop(columns="PoN")
+            pos_markers = markers.loc[markers["PoN"] == "pos"] # subset positive markers
+            neg_markers = markers.loc[markers["PoN"] == "neg"] # subset negative markers
+            pos_markers = pos_markers.drop(columns="PoN") # drop pos and gen columns
             neg_markers = neg_markers.drop(columns="PoN")
             return pos_markers, neg_markers
         else:
@@ -57,7 +57,7 @@ class DefineLabel:
         :return: tuple
         """
         markers = self.read_markers()
-        celltypes = markers.index.unique().tolist()
+        celltypes = markers.index.unique().tolist() # get celltypes (index column unique)
         if len(celltypes) < 1:
             print("No cell labels found!")
             return list()
@@ -74,45 +74,45 @@ class DefineLabel:
         pos_markers, neg_markers = self.get_markers()
         adata = self.get_adata()
         celltypes = self.celltypes()
-        cells = pd.DataFrame(adata.obs_names)
+        cells = pd.DataFrame(adata.obs_names) # create dataframe with cells
 
         for celltype in celltypes:
-            cells["pos"] = 0
+            cells["pos"] = 0 # for each cell type create pos and neg columns to score the markers
             cells["neg"] = 0
-            count = 0
+            count = 0 # count the markers
             for gene in pos_markers.loc[celltype]:
                 if type(gene) == str:
                     try:
-                        cells["pos"][((adata[:, gene].X > 0).toarray().flatten())] += 1
+                        cells["pos"][((adata[:, gene].X > 0).toarray().flatten())] += 1 # assign pos score
                         cells["pos"][((adata[:, gene].X == 0).toarray().flatten())] -= 0
                         count += 1
                     except KeyError:
                         print(f"Positive Marker {gene} for cell type {celltype} not found")
                 else:
                     pass
-            cells["pos"] = cells["pos"] / count
+            cells["pos"] = cells["pos"] / count # normalise score by the number of markers
             count = 0
             for gene in neg_markers.loc[celltype]:
                 if type(gene) == str:
                     try:
-                        cells["neg"][((adata[:, gene].X > 0).toarray().flatten())] -= 1
+                        cells["neg"][((adata[:, gene].X > 0).toarray().flatten())] -= 1 # assign neg score
                         cells["neg"][((adata[:, gene].X == 0).toarray().flatten())] += 0
                         count += 1
                     except KeyError:
                         print(f"Negative Marker {gene} for cell type {celltype} not found")
                 else:
                     pass
-            cells["neg"] = cells["neg"] / count
-            cells[celltype] = (alpha * cells["pos"]) + (beta * cells["neg"])
-        cells = cells.set_index(0)
-        del cells["pos"]
+            cells["neg"] = cells["neg"] / count # normalise score by the number of markers
+            cells[celltype] = (alpha * cells["pos"]) + (beta * cells["neg"]) # get final score summing pos and neg by bias
+        cells = cells.set_index(0) # cells as index
+        del cells["pos"] # drop pos column
         del cells["neg"]
         return cells, adata
         pass
 
     def get_label(self, newfile="", alpha=0.8, beta=1,  newlabel="new_label", threshold=0, thresholdlab="Other"):
         """
-               This function label each cell with the given label with highest score and save the new anndata file.
+        This function label each cell with the given label with highest score and save the new anndata file.
         TODO: refine handling of labels with same scores
         :param newfile: (str) with the output file name
         :param alpha: (float) weight positive markers
@@ -123,20 +123,20 @@ class DefineLabel:
         :return:
         """
         cells, adata = self.score_label(alpha, beta)
-        cells.insert(loc=0, column=thresholdlab, value=threshold)
-        cells["Label"] = cells.idxmax(axis=1)
-        newdf = self.markers
-        newdf = newdf[:-4] + "_results.csv"
+        cells.insert(loc=0, column=thresholdlab, value=threshold) # insert threshold column before others
+        cells["Label"] = cells.idxmax(axis=1) # get label by higher score
+        newdf = self.markers # markers file name
+        newdf = newdf[:-4] + "_results.csv" # results name (csv)
         cells.to_csv(newdf)
-        cells = cells.iloc[:, -1]
-        adata.obs[newlabel] = cells
-        print(adata.obs[newlabel].value_counts())
-        if newfile == "":
+        cells = cells.iloc[:, -1] # keep index and labels column
+        adata.obs[newlabel] = cells # add the new labels as metadata to the anndata object
+        print(adata.obs[newlabel].value_counts()) # print result
+        if newfile == "": # if newfile is empty take old file name and append "processed.h5ad"
             newfile = self.adata
             newfile = newfile[:-5] + "_processed.h5ad"
         else:
             pass
-        adata.write(newfile)
+        adata.write(newfile) # save new anndata object
 
 
 
