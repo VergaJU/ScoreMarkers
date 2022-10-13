@@ -1,4 +1,5 @@
 # ## This function will contain bla bla bla
+import numpy as np
 import pandas as pd
 import scanpy as sc
 
@@ -63,7 +64,7 @@ class DefineLabel:
             return list()
         return celltypes
 
-    def score_label(self,alpha=0.8, beta=1):
+    def score_label(self,alpha=1, beta=1):
         """
         This function give a score for each label and each cell and return a dataframe with cell barcodes as index
         and the columns with the scores for each label
@@ -110,7 +111,7 @@ class DefineLabel:
         return cells, adata
         pass
 
-    def get_label(self, newfile="", alpha=0.8, beta=1,  newlabel="new_label", threshold=0, thresholdlab="Other"):
+    def get_label(self, thresholdvalue, newfile="", alpha=1, beta=1, newlabel="new_label", thresholdlab="Other"):
         """
         This function label each cell with the given label with highest score and save the new anndata file.
         TODO: refine handling of labels with same scores
@@ -118,11 +119,17 @@ class DefineLabel:
         :param alpha: (float) weight positive markers
         :param beta:  (float) weight negative markers
         :param newlabel: (str) label of the new variable
-        :param threshold: (int) value of the threshold to label the cells
+        :param thresholdvalue: (int) value of the percentile threshold to label the cells
         :param thresholdlab: (str) name of the thershold label if none of the other labels have an higher score
         :return:
         """
         cells, adata = self.score_label(alpha, beta)
+        abs_values = []
+        for column in cells.columns:
+            abs_values += cells[column].abs().values.tolist()
+        abs_values = np.array(abs_values)
+        thresholdvalue = int(thresholdvalue)
+        threshold = np.percentile(abs_values, thresholdvalue)
         cells.insert(loc=0, column=thresholdlab, value=threshold) # insert threshold column before others
         cells["Label"] = cells.idxmax(axis=1) # get label by higher score
         newdf = self.markers # markers file name

@@ -72,6 +72,7 @@ pip install requirements
 
 The script that run all the scoring functions and assign labels is `GetLabels.py`
 ```
+
 usage: GetLabels.py [-h] [-i INPUT_FILE] [-c CSV] [-o OUTPUT] [-a ALPHA] [-b BETA] [-l LABEL] [-t THRESHOLD_LABEL] [-v THRESHOLD_VALUE]
 
 Function to score and label cells considering 2 set of markers.
@@ -81,22 +82,21 @@ optional arguments:
   -o OUTPUT, --output OUTPUT
                         Output file name, default is input_processed.h5ad
   -a ALPHA, --alpha ALPHA
-                        Positive markers bias, correct the weight of positive markers. Default=0.8
+                        Positive markers bias, correct the weight of positive markers. Default=1
   -b BETA, --beta BETA  Negative markers bias, correct the weight of negative markers. Default=1
   -l LABEL, --label LABEL
                         Name of the new variable in .obs, default = 'new_label'
   -t THRESHOLD_LABEL, --threshold_label THRESHOLD_LABEL
                         Name of the label to use when cells scores doesn't pass the threshold, default = 'Other'
   -v THRESHOLD_VALUE, --threshold_value THRESHOLD_VALUE
-                        Value of the threshold scores has pass to label the cells
+                        Value of the percentile to set the threshold scores has pass to label the cells, default=10
 
 required arguments:
   -i INPUT_FILE, --input_file INPUT_FILE
                         anndata file with cells to be processed
   -c CSV, --csv CSV     CSV file with labels and markers, NOTE: First column must contains the labels Negative and positive markers must be in separated lines
-                        The header need this format: 'Label' for the labels, 'PoN' for the column that specify if the marker is positive or negativeThe other
+                        The header need this format: 'Label' for the labels, 'PoN' for the column that specify if the marker is positive or negative The other
                         columns containing markers can be unnamed
-
 ```
 
 The required arguments are the anndata input, a single cell experiment dataset obtained with scanpy and a csv file containing the labels and markers with the following structure:
@@ -111,8 +111,8 @@ The optional arguments include:
 - alpha: Bias for the positive markers weight, increasing it increase also the weight assigned to them
 - beta: Bias for the negative markers weight. Since the negative markers "must" not be present, the default parameters assigned an higher value to beta than to alpha
 - label: the name of the .obs variable to assign the new labels
-- threshold label: label to add to the cells whose score doesn't pass the threshold
-- threshold value: thershold the score has to pass to assign the label to the cell. By default is zero since negative values suggest an higher score of the negative markers over the positive markers.
+- threshold label: label to add to the cells whose score doesn't pass the threshold.
+- threshold value: percentile of the scores distribution used to set the threshold, cells without scores above that value will be labelled as "threshold value" has to pass to assign the label to the cell. Before setting the threshold, the function distribute all the absolute values of the scores and then set the threshold as the selected percentile.
 
 The outputs are:
 - updated anndata file with labels
