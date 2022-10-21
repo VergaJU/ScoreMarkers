@@ -42,7 +42,11 @@ With:
 - exp $(x_p)$ = expression of positive marker
 - exp $(x_n)$ = expression of negative marker
 
-For each label is calculated the score in every cell, once all the scores are computed, the label with the highest score is assigned to the cell.
+For each label is calculated the score in every cell, once all the scores are computed, all the absolute values of the scores are sorted and the confidence threshold is calculated as the n<sup>th</sup> percentile. By default the is considered the 10th percentile. Then the label (including the threshold label) with the highest score is assigned to the cell:
+
+$$
+Label = max\, s\, |\, s\, \in\, Score
+$$
 
 # Installation
 
