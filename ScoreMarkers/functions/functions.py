@@ -46,7 +46,7 @@ class DefineLabel:
 
     def get_adata(self):
         """
-        This function read the anndata file
+        This function read the anndata file, normalise it
         :return: adata with sc data (matrix .X and metadata)
         """
         adata = sc.read(self.adata)
