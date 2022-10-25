@@ -79,8 +79,11 @@ class DefineLabel:
         celltypes = self.celltypes()
         cells = pd.DataFrame(adata.obs_names) # create dataframe with cells
         adata_tmp = adata.copy() # create temp file with normalized columns
+        sc.pp.normalize_total(adata_tmp)
+        sc.pp.scale(adata_tmp, zero_center=False)
         alpha = float(alpha)
         beta = float(beta)
+        mean_exp = adata_tmp.X.mean()
 
         for celltype in celltypes:
             cells["pos"] = 0 # for each cell type create pos and neg columns to score the markers
@@ -88,12 +91,9 @@ class DefineLabel:
             count = 0 # count the markers
             for gene in pos_markers.loc[celltype]:
                 if type(gene) == str:
-                    array = adata_tmp[:, gene].X.toarray().flatten()
-                    array = sk.minmax_scale(array, feature_range=(0, 1))
-                    adata_tmp[:, gene].X = array
                     try:
                         cells["pos"][((adata_tmp[:, gene].X > 0).toarray().flatten())] += 1 # assign pos score
-                        cells["pos"][((adata_tmp[:, gene].X > 0.5).toarray().flatten())] += 1
+                        cells["pos"][((adata_tmp[:, gene].X > mean_exp).toarray().flatten())] += 1
                         count += 1
                     except KeyError:
                         print(f"Positive Marker {gene} for cell type {celltype} not found")
@@ -103,12 +103,9 @@ class DefineLabel:
             count = 0
             for gene in neg_markers.loc[celltype]:
                 if type(gene) == str:
-                    array = adata_tmp[:, gene].X.toarray().flatten()
-                    array = sk.minmax_scale(array, feature_range=(0, 1))
-                    adata_tmp[:, gene].X = array
                     try:
                         cells["neg"][((adata_tmp[:, gene].X > 0).toarray().flatten())] += 1 # assign neg score
-                        cells["neg"][((adata_tmp[:, gene].X > 0.5).toarray().flatten())] += 1 # assign neg score
+                        cells["neg"][((adata_tmp[:, gene].X > mean_exp).toarray().flatten())] += 1 # assign neg score
                         count += 1
                     except KeyError:
                         print(f"Negative Marker {gene} for cell type {celltype} not found")
