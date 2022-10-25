@@ -129,3 +129,6 @@ dmypy.json
 .pyre/
 ScoreMarkers/.idea/*
 data/*.h5ad
+data/.~lock.nk_exhaustion_results.csv#
+data/nk_exhaustion_results.xlsx
+*.xlsx#

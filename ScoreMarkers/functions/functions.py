@@ -2,6 +2,8 @@
 import numpy as np
 import pandas as pd
 import scanpy as sc
+import sklearn.preprocessing as sk
+import scipy.sparse as sp
 
 
 class DefineLabel:
@@ -76,6 +78,9 @@ class DefineLabel:
         adata = self.get_adata()
         celltypes = self.celltypes()
         cells = pd.DataFrame(adata.obs_names) # create dataframe with cells
+        adata_tmp = adata.copy() # create temp file with normalized columns
+        alpha = float(alpha)
+        beta = float(beta)
 
         for celltype in celltypes:
             cells["pos"] = 0 # for each cell type create pos and neg columns to score the markers
@@ -83,9 +88,12 @@ class DefineLabel:
             count = 0 # count the markers
             for gene in pos_markers.loc[celltype]:
                 if type(gene) == str:
+                    array = adata_tmp[:, gene].X.toarray().flatten()
+                    array = sk.minmax_scale(array, feature_range=(0, 1))
+                    adata_tmp[:, gene].X = array
                     try:
-                        cells["pos"][((adata[:, gene].X > 0).toarray().flatten())] += 1 # assign pos score
-                        cells["pos"][((adata[:, gene].X == 0).toarray().flatten())] -= 0
+                        cells["pos"][((adata_tmp[:, gene].X > 0).toarray().flatten())] += 1 # assign pos score
+                        cells["pos"][((adata_tmp[:, gene].X > 0.5).toarray().flatten())] += 1
                         count += 1
                     except KeyError:
                         print(f"Positive Marker {gene} for cell type {celltype} not found")
@@ -95,16 +103,19 @@ class DefineLabel:
             count = 0
             for gene in neg_markers.loc[celltype]:
                 if type(gene) == str:
+                    array = adata_tmp[:, gene].X.toarray().flatten()
+                    array = sk.minmax_scale(array, feature_range=(0, 1))
+                    adata_tmp[:, gene].X = array
                     try:
-                        cells["neg"][((adata[:, gene].X > 0).toarray().flatten())] -= 1 # assign neg score
-                        cells["neg"][((adata[:, gene].X == 0).toarray().flatten())] += 0
+                        cells["neg"][((adata_tmp[:, gene].X > 0).toarray().flatten())] += 1 # assign neg score
+                        cells["neg"][((adata_tmp[:, gene].X > 0.5).toarray().flatten())] += 1 # assign neg score
                         count += 1
                     except KeyError:
                         print(f"Negative Marker {gene} for cell type {celltype} not found")
                 else:
                     pass
             cells["neg"] = cells["neg"] / count # normalise score by the number of markers
-            cells[celltype] = (alpha * cells["pos"]) + (beta * cells["neg"]) # get final score summing pos and neg by bias
+            cells[celltype] = (alpha * cells["pos"]) - (beta * cells["neg"]) # get final score summing pos and neg by bias
         cells = cells.set_index(0) # cells as index
         del cells["pos"] # drop pos column
         del cells["neg"]
@@ -114,7 +125,7 @@ class DefineLabel:
     def get_label(self, thresholdvalue, newfile="", alpha=1, beta=1, newlabel="new_label", thresholdlab="Other"):
         """
         This function label each cell with the given label with highest score and save the new anndata file.
-        TODO: refine handling of labels with same scores
+        TODO: chech threshold
         :param newfile: (str) with the output file name
         :param alpha: (float) weight positive markers
         :param beta:  (float) weight negative markers
