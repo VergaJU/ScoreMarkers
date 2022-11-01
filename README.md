@@ -26,8 +26,8 @@ $$
 f(x_p)=
 \begin{cases}
 x=2 & \quad \text{when exp$(x_p)$ > mean(total expression)}\\ 
-x=1 & \quad \text{when mean	&le; exp$(x_p)$ > 0}\\ 
-x=0 & \quad \text{otherwise}
+x=1 & \quad \text{when mean	&ge; exp$(x_p)$ > 0}\\ 
+x=0 & \quad \text{when exp$(x_p)$ = 0}
 \end{cases}
 $$
 
@@ -36,8 +36,9 @@ and $f(x_n)$ is:
 $$
 f(x_n)=
 \begin{cases}
-x=-1 & \quad \text{when exp$(x_n)$ > 0}\\ 
-x=0 & \quad \text{otherwise}
+x=2 & \quad \text{when exp$(x_p)$ > mean(total expression)}\\ 
+x=1 & \quad \text{when mean	&ge; exp$(x_p)$ > 0}\\ 
+x=0 & \quad \text{when exp$(x_p)$ = 0}
 \end{cases}
 $$
 
