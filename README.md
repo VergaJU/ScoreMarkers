@@ -26,7 +26,7 @@ $$
 f(x_p)=
 \begin{cases}
 x=2 & \quad \text{when exp$(x_p)$ > mean(total expression)}\\ 
-x=1 & \quad \text{when mean \leq exp$(x_p)$ > 0}\\ 
+x=1 & \quad \text{when mean	&le; exp$(x_p)$ > 0}\\ 
 x=0 & \quad \text{otherwise}
 \end{cases}
 $$
