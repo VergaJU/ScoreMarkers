@@ -3,10 +3,12 @@
 Function to score the expression of positive and negative markers in single cell RNA seq data.
 
 The project aim is to score and label the cells from an anndata file based on the expression of positive and negative markers. The scoring function work as follow:<br/>
-For each label the score is given by the formula below:<br/>
+- Data normalization and scaling (using scanpy built-in functions)
+- Evaluate mean expression (not median because frequently is 0)
+- For each label the score is given by the formula below:<br/>
 
 $$
-\sum{(\alpha\times\frac{\sum{_{i=1}^{n_p}}{f(x_p)}}{n_p}+\beta\times\frac{\sum{ _{i=1} ^{n_n}}{f(x_n)}}{n_n})}
+Score=\sum{(\alpha\times\frac{\sum{_{i=1}^{n_p}}{f(x_p)}}{n_p}-\beta\times\frac{\sum{ _{i=1} ^{n_n}}{f(x_n)}}{n_n})}
 $$
 
 With:
@@ -23,7 +25,8 @@ Where $f(x_p)$ is:
 $$
 f(x_p)=
 \begin{cases}
-x=1 & \quad \text{when exp$(x_p)$ > 0}\\ 
+x=2 & \quad \text{when exp$(x_p)$ > mean(total expression)}\\ 
+x=1 & \quad \text{when mean \leq exp$(x_p)$ > 0}\\ 
 x=0 & \quad \text{otherwise}
 \end{cases}
 $$
