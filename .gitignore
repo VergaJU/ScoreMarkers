@@ -132,3 +132,5 @@ data/*.h5ad
 data/.~lock.nk_exhaustion_results.csv#
 data/nk_exhaustion_results.xlsx
 *.xlsx#
+*.csv
+*.xlsx
