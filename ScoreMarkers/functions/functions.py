@@ -97,7 +97,7 @@ class DefineLabel:
                         #median_exp = gene_counts.median()
                         #cells["pos"][((adata_tmp[:, gene].X > 0).toarray().flatten())] += 1 # assign pos score
                         #cells["pos"][((adata_tmp[:, gene].X > median_exp).toarray().flatten())] += 1
-                        cells["pos"] += adata_tmp[:, gene].X.toarray().flatten()*1
+                        cells["pos"] += adata_tmp[:, gene].X.toarray().flatten() * 1
                         count += 1
                     except KeyError:
                         print(f"Positive Marker {gene} for cell type {celltype} not found")
