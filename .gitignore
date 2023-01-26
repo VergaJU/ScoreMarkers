@@ -134,3 +134,4 @@ data/nk_exhaustion_results.xlsx
 *.xlsx#
 *.csv
 *.xlsx
+ScoreMarkers/functions/Data/nk_paths.h5ad
