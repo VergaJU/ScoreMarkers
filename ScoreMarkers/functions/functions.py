@@ -103,25 +103,19 @@ class DefineLabel:
                         print(f"Positive Marker {gene} for cell type {celltype} not found")
                 else:
                     pass
-
-            cells["pos"] = (cells["pos"] - cells["pos"].min()) / (cells["pos"].max()-cells["pos"].min()) # minmax norm
+            cells["pos"] = cells["pos"] / count # normalise score by the number of markers
             count = 0
             for gene in neg_markers.loc[celltype]:
                 if type(gene) == str:
                     try:
-                        #gene_counts = adata_tmp[:, gene].X.toarray().flatten()
-                        #median_exp = gene_counts.median()
-                        #cells["neg"][((adata_tmp[:, gene].X > 0).toarray().flatten())] += 1 # assign neg score
-                        #cells["neg"][((adata_tmp[:, gene].X > median_exp).toarray().flatten())] += 1 # assign neg score
-                        cells["neg"] += adata_tmp[:, gene].X.toarray().flatten() * 1
+                        cells["neg"][((adata_tmp[:, gene].X > 0).toarray().flatten())] += 1 # assign neg score
+                        cells["neg"][((adata_tmp[:, gene].X > mean_exp).toarray().flatten())] += 1 # assign neg score
                         count += 1
                     except KeyError:
                         print(f"Negative Marker {gene} for cell type {celltype} not found")
                 else:
                     pass
-            #cells["neg"] = cells["neg"] / count # normalise score by the number of markers
-            cells["neg"] = (cells["neg"] - cells["neg"].min()) / (cells["neg"].max()-cells["neg"].min()) # minmax norm
-
+            cells["neg"] = cells["neg"] / count # normalise score by the number of markers
             cells[celltype] = (alpha * cells["pos"]) - (beta * cells["neg"]) # get final score summing pos and neg by bias
         cells = cells.set_index(0) # cells as index
         del cells["pos"] # drop pos column
@@ -132,6 +126,7 @@ class DefineLabel:
     def get_label(self, thresholdvalue, newfile="", alpha=1, beta=1, newlabel="new_label", thresholdlab="Other"):
         """
         This function label each cell with the given label with highest score and save the new anndata file.
+        TODO: chech threshold
         TODO: chech threshold
         :param newfile: (str) with the output file name
         :param alpha: (float) weight positive markers
