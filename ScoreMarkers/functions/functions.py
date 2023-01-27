@@ -1,5 +1,5 @@
 # ## This function will contain bla bla bla
-import numpy as np
+# import numpy as np
 import pandas as pd
 import scanpy as sc
 import sklearn.preprocessing as sk
@@ -36,9 +36,9 @@ class DefineLabel:
         """
         markers = self.read_markers()
         if not markers.empty:
-            pos_markers = markers.loc[markers["PoN"] == "pos"] # subset positive markers
-            neg_markers = markers.loc[markers["PoN"] == "neg"] # subset negative markers
-            pos_markers = pos_markers.drop(columns="PoN") # drop pos and gen columns
+            pos_markers = markers.loc[markers["PoN"] == "pos"]  # subset positive markers
+            neg_markers = markers.loc[markers["PoN"] == "neg"]  # subset negative markers
+            pos_markers = pos_markers.drop(columns="PoN")  # drop pos and gen columns
             neg_markers = neg_markers.drop(columns="PoN")
             return pos_markers, neg_markers
         else:
@@ -60,13 +60,13 @@ class DefineLabel:
         :return: tuple
         """
         markers = self.read_markers()
-        celltypes = markers.index.unique().tolist() # get celltypes (index column unique)
+        celltypes = markers.index.unique().tolist()  # get celltypes (index column unique)
         if len(celltypes) < 1:
             print("No cell labels found!")
             return list()
         return celltypes
 
-    def score_label(self,alpha=1, beta=1):
+    def score_label(self, alpha=1, beta=1):
         """
         This function give a score for each label and each cell and return a dataframe with cell barcodes as index
         and the columns with the scores for each label
@@ -77,13 +77,14 @@ class DefineLabel:
         pos_markers, neg_markers = self.get_markers()
         adata = self.get_adata()
         celltypes = self.celltypes()
-        cells = pd.DataFrame(adata.obs_names) # create dataframe with cells
-        adata_tmp = adata.copy() # create temp file with normalized columns
+        cells = pd.DataFrame(adata.obs_names)  # create dataframe with cells
+        adata_tmp = adata.copy()  # create temp file with normalized columns
         sc.pp.normalize_total(adata_tmp)
-        sc.pp.scale(adata_tmp, zero_center=False)
+        sc.pp.log1p(adata_tmp)
+        # sc.pp.scale(adata_tmp, zero_center=False)
         alpha = float(alpha)
         beta = float(beta)
-        mean_exp = adata_tmp.X.mean()
+        # mean_exp = adata_tmp.X.mean()
 
         for celltype in celltypes:
             cells["pos"] = 0 # for each cell type create pos and neg columns to score the markers
@@ -92,27 +93,35 @@ class DefineLabel:
             for gene in pos_markers.loc[celltype]:
                 if type(gene) == str:
                     try:
-                        cells["pos"][((adata_tmp[:, gene].X > 0).toarray().flatten())] += 1 # assign pos score
-                        cells["pos"][((adata_tmp[:, gene].X > mean_exp).toarray().flatten())] += 1
-
+                        #gene_counts = adata_tmp[:, gene].X.toarray().flatten()
+                        #median_exp = gene_counts.median()
+                        #cells["pos"][((adata_tmp[:, gene].X > 0).toarray().flatten())] += 1 # assign pos score
+                        #cells["pos"][((adata_tmp[:, gene].X > median_exp).toarray().flatten())] += 1
+                        cells["pos"] += adata_tmp[:, gene].X.toarray().flatten() * 1
                         count += 1
                     except KeyError:
                         print(f"Positive Marker {gene} for cell type {celltype} not found")
                 else:
                     pass
-            cells["pos"] = cells["pos"] / count # normalise score by the number of markers
+
+            cells["pos"] = (cells["pos"] - cells["pos"].min()) / (cells["pos"].max()-cells["pos"].min()) # minmax norm
             count = 0
             for gene in neg_markers.loc[celltype]:
                 if type(gene) == str:
                     try:
-                        cells["neg"][((adata_tmp[:, gene].X > 0).toarray().flatten())] += 1 # assign neg score
-                        cells["neg"][((adata_tmp[:, gene].X > mean_exp).toarray().flatten())] += 1 # assign neg score
+                        #gene_counts = adata_tmp[:, gene].X.toarray().flatten()
+                        #median_exp = gene_counts.median()
+                        #cells["neg"][((adata_tmp[:, gene].X > 0).toarray().flatten())] += 1 # assign neg score
+                        #cells["neg"][((adata_tmp[:, gene].X > median_exp).toarray().flatten())] += 1 # assign neg score
+                        cells["neg"] += adata_tmp[:, gene].X.toarray().flatten() * 1
                         count += 1
                     except KeyError:
                         print(f"Negative Marker {gene} for cell type {celltype} not found")
                 else:
                     pass
-            cells["neg"] = cells["neg"] / count # normalise score by the number of markers
+            #cells["neg"] = cells["neg"] / count # normalise score by the number of markers
+            cells["neg"] = (cells["neg"] - cells["neg"].min()) / (cells["neg"].max()-cells["neg"].min()) # minmax norm
+
             cells[celltype] = (alpha * cells["pos"]) - (beta * cells["neg"]) # get final score summing pos and neg by bias
         cells = cells.set_index(0) # cells as index
         del cells["pos"] # drop pos column
@@ -136,23 +145,23 @@ class DefineLabel:
         abs_values = []
         for column in cells.columns:
             abs_values += cells[column].abs().values.tolist()
-        abs_values = np.array(abs_values)
-        thresholdvalue = int(thresholdvalue)
-        threshold = np.percentile(abs_values, thresholdvalue)
-        cells.insert(loc=0, column=thresholdlab, value=threshold) # insert threshold column before others
-        cells["Label"] = cells.idxmax(axis=1) # get label by higher score
-        newdf = self.markers # markers file name
-        newdf = newdf[:-4] + "_results.csv" # results name (csv)
+        # abs_values = np.array(abs_values)
+        thresholdvalue = int(thresholdvalue) / 100
+        abs_values = pd.DataFrame(abs_values)
+        abs_values["rank"] = round(abs_values.rank(pct=True), 1)
+        threshold = abs_values[abs_values["rank"] <= thresholdvalue].max()[0]
+        # threshold = np.percentile(abs_values, thresholdvalue)
+        cells.insert(loc=0, column=thresholdlab, value=threshold)  # insert threshold column before others
+        cells["Label"] = cells.idxmax(axis=1)  # get label by higher score
+        newdf = self.markers  # markers file name
+        newdf = newdf[:-4] + "_results.csv"  # results name (csv)
         cells.to_csv(newdf)
-        cells = cells.iloc[:, -1] # keep index and labels column
-        adata.obs[newlabel] = cells # add the new labels as metadata to the anndata object
-        print(adata.obs[newlabel].value_counts()) # print result
-        if newfile == "": # if newfile is empty take old file name and append "processed.h5ad"
+        cells = cells.iloc[:, -1]  # keep index and labels column
+        adata.obs[newlabel] = cells  # add the new labels as metadata to the anndata object
+        print(adata.obs[newlabel].value_counts())  # print result
+        if newfile == "":  # if newfile is empty take old file name and append "processed.h5ad"
             newfile = self.adata
             newfile = newfile[:-5] + "_processed.h5ad"
         else:
             pass
-        adata.write(newfile) # save new anndata object
-
-
-
+        adata.write(newfile)  # save new anndata object
