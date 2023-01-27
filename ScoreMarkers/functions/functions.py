@@ -92,16 +92,9 @@ class DefineLabel:
             for gene in pos_markers.loc[celltype]:
                 if type(gene) == str:
                     try:
-<<<<<<< HEAD
-                        #gene_counts = adata_tmp[:, gene].X.toarray().flatten()
-                        #median_exp = gene_counts.median()
-                        #cells["pos"][((adata_tmp[:, gene].X > 0).toarray().flatten())] += 1 # assign pos score
-                        #cells["pos"][((adata_tmp[:, gene].X > median_exp).toarray().flatten())] += 1
-                        cells["pos"] += adata_tmp[:, gene].X.toarray().flatten() * 1
-=======
                         cells["pos"][((adata_tmp[:, gene].X > 0).toarray().flatten())] += 1 # assign pos score
                         cells["pos"][((adata_tmp[:, gene].X > mean_exp).toarray().flatten())] += 1
->>>>>>> parent of c1e1ecc (Update scores with expression)
+
                         count += 1
                     except KeyError:
                         print(f"Positive Marker {gene} for cell type {celltype} not found")
