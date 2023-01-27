@@ -1,5 +1,5 @@
 # ## This function will contain bla bla bla
-# import numpy as np
+import numpy as np
 import pandas as pd
 import scanpy as sc
 import sklearn.preprocessing as sk
@@ -80,8 +80,8 @@ class DefineLabel:
         cells = pd.DataFrame(adata.obs_names)  # create dataframe with cells
         adata_tmp = adata.copy()  # create temp file with normalized columns
         sc.pp.normalize_total(adata_tmp)
-        sc.pp.log1p(adata_tmp)
-        # sc.pp.scale(adata_tmp, zero_center=False)
+        #sc.pp.log1p(adata_tmp)
+        sc.pp.scale(adata_tmp, zero_center=False)
         alpha = float(alpha)
         beta = float(beta)
         # mean_exp = adata_tmp.X.mean()
@@ -93,28 +93,34 @@ class DefineLabel:
             for gene in pos_markers.loc[celltype]:
                 if type(gene) == str:
                     try:
-                        #gene_counts = adata_tmp[:, gene].X.toarray().flatten()
-                        #median_exp = gene_counts.median()
-                        #cells["pos"][((adata_tmp[:, gene].X > 0).toarray().flatten())] += 1 # assign pos score
-                        #cells["pos"][((adata_tmp[:, gene].X > median_exp).toarray().flatten())] += 1
-                        cells["pos"] += adata_tmp[:, gene].X.toarray().flatten() * 1
+                        gene_counts = pd.DataFrame(adata_tmp[:, gene].X.toarray().flatten())
+                        median_exp = gene_counts[gene_counts[0]>0].median()[0]
+                        cells["pos"][((adata_tmp[:, gene].X > 0).toarray().flatten())] += 1 # assign pos score
+                        cells["pos"][((adata_tmp[:, gene].X > median_exp).toarray().flatten())] += 1
+                        #cells["pos"] += adata_tmp[:, gene].X.toarray().flatten() * 1
                         count += 1
                     except KeyError:
                         print(f"Positive Marker {gene} for cell type {celltype} not found")
                 else:
                     pass
+            #cells["pos"] = (cells["pos"] - cells["pos"].min()) / (cells["pos"].max() - cells["pos"].min())
             cells["pos"] = cells["pos"] / count # normalise score by the number of markers
             count = 0
             for gene in neg_markers.loc[celltype]:
                 if type(gene) == str:
                     try:
+                        gene_counts = pd.DataFrame(adata_tmp[:, gene].X.toarray().flatten())
+                        median_exp = gene_counts[gene_counts[0]>0].median()[0]
                         cells["neg"][((adata_tmp[:, gene].X > 0).toarray().flatten())] += 1 # assign neg score
-                        cells["neg"][((adata_tmp[:, gene].X > mean_exp).toarray().flatten())] += 1 # assign neg score
+                        cells["neg"][((adata_tmp[:, gene].X > median_exp).toarray().flatten())] += 1 # assign neg score
+                        #cells["neg"] += adata_tmp[:, gene].X.toarray().flatten() * 1
+
                         count += 1
                     except KeyError:
                         print(f"Negative Marker {gene} for cell type {celltype} not found")
                 else:
                     pass
+            #cells["neg"] = (cells["neg"] - cells["neg"].min()) / (cells["neg"].max() - cells["neg"].min())
             cells["neg"] = cells["neg"] / count # normalise score by the number of markers
             cells[celltype] = (alpha * cells["pos"]) - (beta * cells["neg"]) # get final score summing pos and neg by bias
         cells = cells.set_index(0) # cells as index
@@ -140,12 +146,12 @@ class DefineLabel:
         abs_values = []
         for column in cells.columns:
             abs_values += cells[column].abs().values.tolist()
-        # abs_values = np.array(abs_values)
-        thresholdvalue = int(thresholdvalue) / 100
-        abs_values = pd.DataFrame(abs_values)
-        abs_values["rank"] = round(abs_values.rank(pct=True), 1)
-        threshold = abs_values[abs_values["rank"] <= thresholdvalue].max()[0]
-        # threshold = np.percentile(abs_values, thresholdvalue)
+        abs_values = np.array(abs_values)
+        thresholdvalue = int(thresholdvalue)
+        #abs_values = pd.DataFrame(abs_values)
+        #abs_values["rank"] = round(abs_values.rank(pct=True), 1)
+        #threshold = abs_values[abs_values["rank"] <= thresholdvalue].max()[0]
+        threshold = np.percentile(abs_values, thresholdvalue)
         cells.insert(loc=0, column=thresholdlab, value=threshold)  # insert threshold column before others
         cells["Label"] = cells.idxmax(axis=1)  # get label by higher score
         newdf = self.markers  # markers file name
