@@ -1,6 +1,6 @@
 import functions.functions as fun
 import argparse
-
+from functions.functions import DefineLabel
 parser = argparse.ArgumentParser(description="Function to score and label cells considering 2 set of markers.")
 
 requiredNamed = parser.add_argument_group('required arguments')
