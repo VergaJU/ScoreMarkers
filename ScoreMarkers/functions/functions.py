@@ -146,26 +146,28 @@ class DefineLabel:
         cells = cells.reset_index()
         abs_values = np.sort(abs_values)[::-1]
         ### Scores distribution with threshold:
-        plt.figure(figsize=(9, 3))
+        plt.figure(figsize=(9, 4))
         for f in range(len(labels)):
             plt.plot(cells[labels[f]], label=labels[f])
         plt.grid(axis='y',linestyle='--', linewidth=.3)
         plt.title("Scores and threshold distribution")
+        plt.xlabel("Cells")
+        plt.ylabel("score")
         plt.legend()
         newimage = newfile[:-5] + "_scores_distribution.png"
-        plt.savefig(newimage)
+        plt.savefig(newimage, dpi=300)
 
         ### absolute distribution scores and percentile
         threshold_label = "Threshold value (" + str(thresholdvalue) + "percentile)"
-        plt.figure(figsize=(9,3))
+        plt.figure(figsize=(9,4))
         sns.kdeplot(abs_values, label = "abs(scores)")
         plt.axvline(threshold, color = "r", linestyle="--", label = threshold_label)
         plt.grid(axis='y',linestyle='--', linewidth=.3)
         plt.title("Absolute scores ")
-        plt.xlabel("score")
+        plt.xlabel("Abs(score)")
         plt.legend()
         newimage = newfile[:-5] + "_absolute_scores.png"
-        plt.savefig(newimage)
+        plt.savefig(newimage, dpi=300)
 
     def get_label(self, thresholdvalue, newfile="", alpha=1, beta=1, newlabel="new_label", thresholdlab="Other", plot=True):
         """
