@@ -31,6 +31,9 @@ parser.add_argument("-t", "--threshold_label",
 parser.add_argument("-v", "--threshold_value",
                     help="Value of the percentile to set the threshold scores has pass to label the cells, default=10",
                     default=10)
+parser.add_argument("-p", "--plot",
+                    help="Save or not scores plots (True/False), default=True",
+                    default=True)
 args = parser.parse_args()
 
 define = fun.DefineLabel(adata=args.input_file,
@@ -41,4 +44,5 @@ define.get_label(alpha=args.alpha,
                  newlabel=args.label,
                  newfile=args.output,
                  thresholdlab=args.threshold_label,
-                 thresholdvalue=args.threshold_value)
+                 thresholdvalue=args.threshold_value,
+                 plot=args.plot)

@@ -167,7 +167,7 @@ class DefineLabel:
         newimage = newfile[:-5] + "_absolute_scores.png"
         plt.savefig(newimage)
 
-    def get_label(self, thresholdvalue, newfile="", alpha=1, beta=1, newlabel="new_label", thresholdlab="Other"):
+    def get_label(self, thresholdvalue, newfile="", alpha=1, beta=1, newlabel="new_label", thresholdlab="Other", plot=True):
         """
         This function label each cell with the given label with highest score and save the new anndata file.
         TODO: chech threshold
@@ -202,7 +202,10 @@ class DefineLabel:
             pass
         adata.write(newfile)  # save new anndata object
         adata.obs[newlabel].to_csv(newfile[:-5] + "_labels.csv")
-        self.plots(cells, newfile, abs_values,threshold,thresholdvalue)
+        if plot:
+            self.plots(cells, newfile, abs_values,threshold,thresholdvalue)
+        else:
+            pass
 
         return cells, adata
 
