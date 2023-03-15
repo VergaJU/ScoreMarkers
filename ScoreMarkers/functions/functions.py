@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 import scanpy as sc
+import matplotlib.pyplot as plt
 import sklearn.preprocessing as sk
 import scipy.sparse as sp
 
@@ -129,6 +130,8 @@ class DefineLabel:
         return cells, adata
         pass
 
+
+
     def get_label(self, thresholdvalue, newfile="", alpha=1, beta=1, newlabel="new_label", thresholdlab="Other"):
         """
         This function label each cell with the given label with highest score and save the new anndata file.
@@ -157,8 +160,8 @@ class DefineLabel:
         newdf = self.markers  # markers file name
         newdf = newdf[:-4] + "_results.csv"  # results name (csv)
         cells.to_csv(newdf)
-        cells = cells.iloc[:, -1]  # keep index and labels column
-        adata.obs[newlabel] = cells  # add the new labels as metadata to the anndata object
+        cells_lables = cells.iloc[:, -1]  # keep index and labels column
+        adata.obs[newlabel] = cells_lables  # add the new labels as metadata to the anndata object
         print(adata.obs[newlabel].value_counts())  # print result
         if newfile == "":  # if newfile is empty take old file name and append "processed.h5ad"
             newfile = self.adata
@@ -166,3 +169,9 @@ class DefineLabel:
         else:
             pass
         adata.write(newfile)  # save new anndata object
+        adata.obs[newlabel].to_csv(newfile[:-5] + "_labels.csv")
+
+        return cells, adata
+
+
+
