@@ -130,6 +130,28 @@ class DefineLabel:
         return cells, adata
         pass
 
+    def plots(self, cells, newfile):
+        """
+
+        :param cells:
+        :param adata:
+        :param thresholdlab:
+        :return:
+        """
+        ### prepare dataset and labels:
+        cells = cells.iloc[:,:-1]
+        labels = cells.columns
+        cells = cells.sort_values(by=[labels[1]])
+        cells = cells.reset_index()
+        ### Scores distribution with threshold:
+        plt.figure(figsize=(9, 3))
+        for f in range(len(labels)):
+            plt.plot(cells[labels[f]], label=labels[f])
+        plt.grid(axis='y',linestyle='--', linewidth=.3)
+        plt.title("Scores and threshold distribution")
+        plt.legend()
+        newimage = newfile[:-5] + "_scores_distribution.png"
+        plt.savefig(newimage)
 
 
     def get_label(self, thresholdvalue, newfile="", alpha=1, beta=1, newlabel="new_label", thresholdlab="Other"):
@@ -151,9 +173,6 @@ class DefineLabel:
             abs_values += cells[column].abs().values.tolist()
         abs_values = np.array(abs_values)
         thresholdvalue = int(thresholdvalue)
-        #abs_values = pd.DataFrame(abs_values)
-        #abs_values["rank"] = round(abs_values.rank(pct=True), 1)
-        #threshold = abs_values[abs_values["rank"] <= thresholdvalue].max()[0]
         threshold = np.percentile(abs_values, thresholdvalue)
         cells.insert(loc=0, column=thresholdlab, value=threshold)  # insert threshold column before others
         cells["Label"] = cells.idxmax(axis=1)  # get label by higher score
@@ -170,6 +189,7 @@ class DefineLabel:
             pass
         adata.write(newfile)  # save new anndata object
         adata.obs[newlabel].to_csv(newfile[:-5] + "_labels.csv")
+        self.plots(cells, newfile)
 
         return cells, adata
 
