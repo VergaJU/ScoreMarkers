@@ -135,9 +135,5 @@ python GetLabels.py -h
 
 Minimum example command:
 ```
-python GetLabels.py -i /path/to/anndata/file.h5ad -c /path/to/marker/file.csv -o /path/for/output/file.h5ad
+python GetLabels.py -i ../data/test_set.h5ad -c ../data/nk_exhaustion.csv
 ```
-
-# TODO:
-
-Include images and a csv file easy to include in Seurat and anndata objects
