@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 import matplotlib.pyplot as plt
+import seaborn as sns
 import sklearn.preprocessing as sk
 import scipy.sparse as sp
 
@@ -130,7 +131,7 @@ class DefineLabel:
         return cells, adata
         pass
 
-    def plots(self, cells, newfile):
+    def plots(self, cells, newfile, abs_values, threshold, thresholdvalue):
         """
 
         :param cells:
@@ -143,6 +144,7 @@ class DefineLabel:
         labels = cells.columns
         cells = cells.sort_values(by=[labels[1]])
         cells = cells.reset_index()
+        abs_values = np.sort(abs_values)[::-1]
         ### Scores distribution with threshold:
         plt.figure(figsize=(9, 3))
         for f in range(len(labels)):
@@ -153,6 +155,17 @@ class DefineLabel:
         newimage = newfile[:-5] + "_scores_distribution.png"
         plt.savefig(newimage)
 
+        ### absolute distribution scores and percentile
+        threshold_label = "Threshold value (" + str(thresholdvalue) + "percentile)"
+        plt.figure(figsize=(9,3))
+        sns.kdeplot(abs_values, label = "abs(scores)")
+        plt.axvline(threshold, color = "r", linestyle="--", label = threshold_label)
+        plt.grid(axis='y',linestyle='--', linewidth=.3)
+        plt.title("Absolute scores ")
+        plt.xlabel("score")
+        plt.legend()
+        newimage = newfile[:-5] + "_absolute_scores.png"
+        plt.savefig(newimage)
 
     def get_label(self, thresholdvalue, newfile="", alpha=1, beta=1, newlabel="new_label", thresholdlab="Other"):
         """
@@ -189,7 +202,7 @@ class DefineLabel:
             pass
         adata.write(newfile)  # save new anndata object
         adata.obs[newlabel].to_csv(newfile[:-5] + "_labels.csv")
-        self.plots(cells, newfile)
+        self.plots(cells, newfile, abs_values,threshold,thresholdvalue)
 
         return cells, adata
 
