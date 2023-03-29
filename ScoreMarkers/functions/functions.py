@@ -187,6 +187,7 @@ class DefineLabel:
         for column in cells.columns:
             abs_values += cells[column].abs().values.tolist()
         abs_values = np.array(abs_values)
+        abs_values = abs_values[abs_values != 0]
         thresholdvalue = int(thresholdvalue)
         threshold = np.percentile(abs_values, thresholdvalue)
         cells.insert(loc=0, column=thresholdlab, value=threshold)  # insert threshold column before others
