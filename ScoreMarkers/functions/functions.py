@@ -81,9 +81,6 @@ class DefineLabel:
         celltypes = self.celltypes()
         cells = pd.DataFrame(adata.obs_names)  # create dataframe with cells
         adata_tmp = adata.copy()  # create temp file with normalized columns
-        sc.pp.normalize_total(adata_tmp)
-        #sc.pp.log1p(adata_tmp)
-        sc.pp.scale(adata_tmp, zero_center=False)
         alpha = float(alpha)
         beta = float(beta)
         # mean_exp = adata_tmp.X.mean()
@@ -95,11 +92,7 @@ class DefineLabel:
             for gene in pos_markers.loc[celltype]:
                 if type(gene) == str:
                     try:
-                        gene_counts = pd.DataFrame(adata_tmp[:, gene].X.toarray().flatten())
-                        median_exp = gene_counts[gene_counts[0]>0].median()[0]
                         cells["pos"][((adata_tmp[:, gene].X > 0).toarray().flatten())] += 1 # assign pos score
-                        cells["pos"][((adata_tmp[:, gene].X > median_exp).toarray().flatten())] += 1
-                        #cells["pos"] += adata_tmp[:, gene].X.toarray().flatten() * 1
                         count += 1
                     except KeyError:
                         print(f"Positive Marker {gene} for cell type {celltype} not found")
@@ -111,12 +104,7 @@ class DefineLabel:
             for gene in neg_markers.loc[celltype]:
                 if type(gene) == str:
                     try:
-                        gene_counts = pd.DataFrame(adata_tmp[:, gene].X.toarray().flatten())
-                        median_exp = gene_counts[gene_counts[0]>0].median()[0]
                         cells["neg"][((adata_tmp[:, gene].X > 0).toarray().flatten())] += 1 # assign neg score
-                        cells["neg"][((adata_tmp[:, gene].X > median_exp).toarray().flatten())] += 1 # assign neg score
-                        #cells["neg"] += adata_tmp[:, gene].X.toarray().flatten() * 1
-
                         count += 1
                     except KeyError:
                         print(f"Negative Marker {gene} for cell type {celltype} not found")
