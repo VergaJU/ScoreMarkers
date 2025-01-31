@@ -73,7 +73,7 @@ source ./scoremarkers/bin/activate
 And then install the required packages:
 
 ```
-pip install requirements
+pip install -r requirements.txt
 ```
 
 ## Usage
