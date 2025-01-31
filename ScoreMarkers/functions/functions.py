@@ -192,9 +192,9 @@ class DefineLabel:
         threshold = np.percentile(abs_values, thresholdvalue)
         cells.insert(loc=0, column=thresholdlab, value=threshold)  # insert threshold column before others
         cells["Label"] = cells.idxmax(axis=1)  # get label by higher score
-        newdf = self.markers  # markers file name
-        newdf = newdf[:-4] + "_results.csv"  # results name (csv)
-        cells.to_csv(newdf)
+        # newdf = self.markers  # markers file name
+        # newdf = newdf[:-4] + "_results.csv"  # results name (csv)
+        # cells.to_csv(newdf)
         cells_lables = cells.iloc[:, -1]  # keep index and labels column
         adata.obs[newlabel] = cells_lables  # add the new labels as metadata to the anndata object
         print(adata.obs[newlabel].value_counts())  # print result
@@ -205,6 +205,8 @@ class DefineLabel:
             pass
         adata.write(newfile)  # save new anndata object
         adata.obs[newlabel].to_csv(newfile[:-5] + "_labels.csv")
+        newdf = newfile[:-5] + "_results.csv"
+        cells.to_csv(newdf)
         if plot:
             self.plots(cells, newfile, abs_values,threshold,thresholdvalue)
         else:
