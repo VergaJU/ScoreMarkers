@@ -1,3 +1,5 @@
+#!/usr/local/bin/python
+
 import functions.functions as fun
 import argparse
 from functions.functions import DefineLabel
